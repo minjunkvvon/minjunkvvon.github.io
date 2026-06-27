@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#000000">
+<title>Minjun Kwon | 권민준</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Serif+KR:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="home">
+<main class="hub" aria-label="Site navigation">
+  <svg class="hub-svg" viewBox="0 0 680 520" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10" fill="none" stroke="#fff" stroke-width="1"/>
+      </marker>
+    </defs>
+    <g fill="none" stroke="#fff" stroke-width="1">
+      <!-- About <-> Writing (top, two-way) -->
+      <path d="M 230,150 Q 340,110 450,150" marker-end="url(#a)"/>
+      <path d="M 450,150 Q 340,190 230,150" marker-end="url(#a)"/>
+      <!-- About -> name -->
+      <path d="M 250,170 Q 290,220 318,248" marker-end="url(#a)"/>
+      <!-- name -> Projects -->
+      <path d="M 362,295 Q 395,325 430,370" marker-end="url(#a)"/>
+      <!-- Contact ⇢ name (dashed) -->
+      <path d="M 250,370 Q 290,320 318,295" marker-end="url(#a)" stroke-dasharray="4 4"/>
+      <!-- Writing -> Projects (right curve) -->
+      <path d="M 470,165 Q 560,270 470,375" marker-end="url(#a)"/>
+      <!-- About -> Contact (left curve) -->
+      <path d="M 210,165 Q 140,270 230,375" marker-end="url(#a)"/>
+    </g>
+  </svg>
+
+  <a class="node node-tl" href="about.html">About</a>
+  <a class="node node-tr" href="writing.html">Writing</a>
+  <a class="node node-bl" href="contact.html">Contact</a>
+  <a class="node node-br" href="projects.html">Projects</a>
+
+  <div class="name" aria-label="Minjun Kwon, 권민준">
+    <div class="name-en">Minjun Kwon</div>
+    <div class="name-ko">권민준</div>
+  </div>
+</main>
+
+<footer class="copyright">Copyright © 2026 Minjun Kwon. All Rights Reserved.</footer>
+</body>
+</html>
