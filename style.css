@@ -32,8 +32,8 @@ body.home {
 
 .hub {
   position: relative;
-  width: min(680px, 100%);
-  aspect-ratio: 680 / 520;
+  width: min(900px, 100%);
+  aspect-ratio: 900 / 640;
 }
 
 .hub-svg {
@@ -45,24 +45,57 @@ body.home {
 
 .node {
   position: absolute;
-  font-size: clamp(18px, 2.4vw, 24px);
   transform: translate(-50%, -50%);
-  transition: opacity 0.25s ease;
+  text-align: center;
   white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
-.node:hover { opacity: 0.55; }
+.node-label {
+  font-size: clamp(18px, 2.4vw, 24px);
+  line-height: 1;
+}
 
-/* Coordinates mirror the SVG anchor points so text and arrows align. */
-.node-tl { left: 29.4%;  top: 28.8%; }   /* 200,150 */
-.node-tr { left: 70.6%;  top: 28.8%; }   /* 480,150 */
-.node-bl { left: 29.4%;  top: 75%;   }   /* 200,395 */
-.node-br { left: 70.6%;  top: 75%;   }   /* 480,395 */
+.node-sub {
+  font-size: clamp(11px, 1.2vw, 13px);
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1;
+}
+
+/* Coordinates mirror the SVG anchor points (out of 900 × 640). */
+.node-tl { left: 25%;  top: 23.4%; }   /* 225,150 */
+.node-tr { left: 75%;  top: 23.4%; }   /* 675,150 */
+.node-bl { left: 25%;  top: 71.9%; }   /* 225,460 */
+.node-br { left: 75%;  top: 71.9%; }   /* 675,460 */
+
+/* Shake on hover — short, tilt-only, looping while hovered.
+   Wrapped in @media (hover: hover) so mobile taps don't trigger it. */
+@media (hover: hover) {
+  .node:hover {
+    animation: tilt-shake 0.18s linear infinite;
+  }
+}
+
+@keyframes tilt-shake {
+  0%   { transform: translate(-50%, -50%) rotate(0deg); }
+  25%  { transform: translate(-50%, -50%) rotate(2deg); }
+  50%  { transform: translate(-50%, -50%) rotate(0deg); }
+  75%  { transform: translate(-50%, -50%) rotate(-2deg); }
+  100% { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node:hover { animation: none; }
+}
 
 .name {
   position: absolute;
   left: 50%;
-  top: 51.5%;
+  top: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   line-height: 1.15;
@@ -129,7 +162,8 @@ body.page {
 
 /* Mobile: shrink the hub gracefully but keep the geometry */
 @media (max-width: 520px) {
-  .node { font-size: 16px; }
+  .node-label { font-size: 15px; }
+  .node-sub { font-size: 10px; }
   .name-en { font-size: 24px; }
   .name-ko { font-size: 15px; }
   .copyright { font-size: 11px; }
