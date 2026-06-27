@@ -19,19 +19,31 @@
       </marker>
     </defs>
     <g fill="none" stroke="#fff" stroke-width="1">
-      <!-- About <-> Writing (top, two-way) -->
-      <path d="M 230,150 Q 450,90 670,150" marker-end="url(#a)"/>
-      <path d="M 670,170 Q 450,230 230,170" marker-end="url(#a)"/>
-      <!-- About -> name -->
-      <path d="M 260,200 Q 340,260 410,300" marker-end="url(#a)"/>
-      <!-- name -> Projects -->
-      <path d="M 490,340 Q 560,400 640,460" marker-end="url(#a)"/>
-      <!-- Contact ⇢ name (dashed) -->
-      <path d="M 260,460 Q 340,400 410,348" marker-end="url(#a)" stroke-dasharray="4 4"/>
-      <!-- Writing -> Projects (right curve) -->
-      <path d="M 710,180 Q 830,320 710,460" marker-end="url(#a)"/>
-      <!-- About -> Contact (left curve) -->
-      <path d="M 190,180 Q 70,320 190,460" marker-end="url(#a)"/>
+      <!-- About <-> Writing (top arc, two-way).
+           Nodes are at x=225 and x=675; we pull endpoints in to x=300 / x=600
+           so the heads sit clearly to the side of each word. -->
+      <path d="M 300,115 Q 450,55 600,115" marker-end="url(#a)"/>
+      <path d="M 600,185 Q 450,245 300,185" marker-end="url(#a)"/>
+
+      <!-- About -> name. From below-right of "About" (~285,200) curving to
+           upper-left of the name block (~370,295). Center of name is (450,320);
+           name half-width ≈ 170, so 370 is just outside the left edge. -->
+      <path d="M 285,200 Q 330,250 370,295" marker-end="url(#a)"/>
+
+      <!-- name -> Projects. From lower-right of name (~530,345) to upper-left
+           of "Projects" (~615,425). -->
+      <path d="M 530,345 Q 575,385 615,425" marker-end="url(#a)"/>
+
+      <!-- Contact ⇢ name (dashed). From upper-right of "Contact" (~285,425) to
+           lower-left of name (~370,350). -->
+      <path d="M 285,425 Q 330,395 370,350" marker-end="url(#a)" stroke-dasharray="4 4"/>
+
+      <!-- Writing -> Projects (long right arc). From below "Writing" to above
+           "Projects", swinging out past x=830. -->
+      <path d="M 715,200 Q 830,305 715,415" marker-end="url(#a)"/>
+
+      <!-- About -> Contact (long left arc). Mirror on the left. -->
+      <path d="M 185,200 Q 70,305 185,415" marker-end="url(#a)"/>
     </g>
   </svg>
 
