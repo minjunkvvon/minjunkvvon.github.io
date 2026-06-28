@@ -80,6 +80,8 @@ body.home {
 .node-label {
   font-size: clamp(18px, 2.4vw, 24px);
   line-height: 1;
+  transition: letter-spacing 0.8s cubic-bezier(.22,.61,.36,1),
+              text-shadow 0.6s ease;
 }
 
 .node-sub {
@@ -87,6 +89,7 @@ body.home {
   color: var(--muted);
   font-style: italic;
   line-height: 1;
+  transition: color 0.6s ease, letter-spacing 0.8s cubic-bezier(.22,.61,.36,1);
 }
 
 /* Coordinates mirror the SVG anchor points (out of 900 × 640). */
@@ -95,24 +98,24 @@ body.home {
 .node-bl { left: 25%;  top: 71.9%; }   /* 225,460 */
 .node-br { left: 75%;  top: 71.9%; }   /* 675,460 */
 
-/* Shake on hover — short, tilt-only, looping while hovered.
-   Wrapped in @media (hover: hover) so mobile taps don't trigger it. */
+/* Hover: signal bloom (luminous halo) + a gentle letter-spacing expansion,
+   like the label coming into focus. Guarded for hover-capable devices, and
+   disabled under reduced-motion. */
 @media (hover: hover) {
-  .node:hover {
-    animation: tilt-shake 0.18s linear infinite;
+  .node:hover .node-label {
+    letter-spacing: 0.18em;
+    text-shadow: 0 0 18px rgba(150,190,255,0.85), 0 0 4px rgba(255,255,255,0.6);
+  }
+  .node:hover .node-sub {
+    letter-spacing: 0.06em;
+    color: rgba(174,200,255,0.7);
   }
 }
 
-@keyframes tilt-shake {
-  0%   { transform: translate(-50%, -50%) rotate(0deg); }
-  25%  { transform: translate(-50%, -50%) rotate(2deg); }
-  50%  { transform: translate(-50%, -50%) rotate(0deg); }
-  75%  { transform: translate(-50%, -50%) rotate(-2deg); }
-  100% { transform: translate(-50%, -50%) rotate(0deg); }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .node:hover { animation: none; }
+  .node-label, .node-sub { transition: none; }
+  .node:hover .node-label { letter-spacing: normal; }
+  .node:hover .node-sub { letter-spacing: normal; }
 }
 
 .name {
