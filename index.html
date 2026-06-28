@@ -178,6 +178,99 @@ const starMaterial = new THREE.PointsMaterial({
 const stars = new THREE.Points(starGeometry, starMaterial);
 scene.add(stars);
 
+// ── Satellite: a glowing point on a tilted orbit, with a fading trail tracing
+// its recent path. The orbit is centred lower (toward the planet) and sized so
+// the visible top of the arc sweeps through the open black space behind the
+// diagram, while the bottom dips behind the Earth limb each pass.
+const orbitCenter = new THREE.Vector3(-0.4, 0.6, -1);  // projects near screen upper-middle
+const ORBIT_RX = 5.4;    // horizontal radius (screen width of the arc)
+const ORBIT_RY = 4.0;    // vertical radius
+const ORBIT_RZ = 9.0;    // depth radius → carries it behind the globe on the far side
+
+// Orbit plane tilted so it reads as an inclined ellipse, not a flat ring.
+const cosT = Math.cos(0.38), sinT = Math.sin(0.38);
+
+function orbitPoint(angle, out) {
+  // Base ellipse in X (screen) and Z (depth), lifted in Y by the tilt.
+  const x = Math.cos(angle) * ORBIT_RX;
+  const z = Math.sin(angle) * ORBIT_RZ;
+  const y = Math.sin(angle) * ORBIT_RY * sinT;
+  out.set(
+    orbitCenter.x + x,
+    orbitCenter.y + y,
+    orbitCenter.z + z * cosT
+  );
+  return out;
+}
+
+// Glowing satellite sprite (soft radial dot drawn to a canvas texture).
+function makeGlowTexture() {
+  const s = 64;
+  const c = document.createElement('canvas');
+  c.width = c.height = s;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(s/2, s/2, 0, s/2, s/2, s/2);
+  g.addColorStop(0,   'rgba(255,255,255,1)');
+  g.addColorStop(0.25,'rgba(210,230,255,0.9)');
+  g.addColorStop(0.6, 'rgba(140,185,255,0.35)');
+  g.addColorStop(1,   'rgba(140,185,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, s, s);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const glowTex = makeGlowTexture();
+
+const satMaterial = new THREE.SpriteMaterial({
+  map: glowTex,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+  depthTest: true
+});
+const satellite = new THREE.Sprite(satMaterial);
+satellite.scale.set(0.62, 0.62, 0.62);
+scene.add(satellite);
+
+// Trail: a fixed-length strip of points behind the satellite, fading out.
+const TRAIL_LEN = 60;
+const trailGeometry = new THREE.BufferGeometry();
+const trailPositions = new Float32Array(TRAIL_LEN * 3);
+const trailColors = new Float32Array(TRAIL_LEN * 3);
+trailGeometry.setAttribute('position', new THREE.BufferAttribute(trailPositions, 3));
+trailGeometry.setAttribute('color', new THREE.BufferAttribute(trailColors, 3));
+const trailMaterial = new THREE.PointsMaterial({
+  size: 0.16,
+  sizeAttenuation: true,
+  vertexColors: true,
+  transparent: true,
+  opacity: 0.9,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false
+});
+const trail = new THREE.Points(trailGeometry, trailMaterial);
+scene.add(trail);
+
+// Pre-fill the trail along the orbit behind the start angle so it looks
+// established on first paint.
+let satAngle = 0;
+const ORBIT_SPEED = 0.0042;               // radians/frame (~25s per orbit @60fps)
+const TRAIL_STEP = 0.012;                 // angular spacing between trail points
+const _p = new THREE.Vector3();
+function initTrail() {
+  for (let i = 0; i < TRAIL_LEN; i++) {
+    orbitPoint(satAngle - i * TRAIL_STEP, _p);
+    trailPositions[i*3] = _p.x; trailPositions[i*3+1] = _p.y; trailPositions[i*3+2] = _p.z;
+    const t = 1 - i / TRAIL_LEN;           // brightness fades toward tail
+    const b = t * t;
+    trailColors[i*3] = b * 0.78; trailColors[i*3+1] = b * 0.86; trailColors[i*3+2] = b;
+  }
+  trailGeometry.attributes.position.needsUpdate = true;
+  trailGeometry.attributes.color.needsUpdate = true;
+}
+initTrail();
+
 function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -190,6 +283,20 @@ function animate() {
   if (!reduceMotion) {
     earth.rotation.y += 0.0006;
     stars.rotation.y += 0.00008;
+
+    // Advance satellite along its orbit.
+    satAngle += ORBIT_SPEED;
+    orbitPoint(satAngle, _p);
+    satellite.position.copy(_p);
+
+    // Shift trail points back by one and write the new head position.
+    for (let i = TRAIL_LEN - 1; i > 0; i--) {
+      trailPositions[i*3]   = trailPositions[(i-1)*3];
+      trailPositions[i*3+1] = trailPositions[(i-1)*3+1];
+      trailPositions[i*3+2] = trailPositions[(i-1)*3+2];
+    }
+    trailPositions[0] = _p.x; trailPositions[1] = _p.y; trailPositions[2] = _p.z;
+    trailGeometry.attributes.position.needsUpdate = true;
   }
   renderer.render(scene, camera);
 }
