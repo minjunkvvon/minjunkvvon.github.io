@@ -178,32 +178,36 @@ const starMaterial = new THREE.PointsMaterial({
 const stars = new THREE.Points(starGeometry, starMaterial);
 scene.add(stars);
 
-// ── Satellite: a glowing point on a tilted orbit, with a fading trail tracing
-// its recent path. The orbit is centred lower (toward the planet) and sized so
-// the visible top of the arc sweeps through the open black space behind the
-// diagram, while the bottom dips behind the Earth limb each pass.
-const orbitCenter = new THREE.Vector3(-0.4, 0.6, -1);  // projects near screen upper-middle
-const ORBIT_RX = 5.4;    // horizontal radius (screen width of the arc)
-const ORBIT_RY = 4.0;    // vertical radius
-const ORBIT_RZ = 9.0;    // depth radius → carries it behind the globe on the far side
+// ── Satellite: a glowing point tracing a believable orbital pass. A true great
+// circle around this giant Earth is far too large for the framing, so we use a
+// compact view-space ellipse, oriented to parallel the limb (which runs
+// lower-left → upper-right) and positioned so both ends sink behind the Earth.
+const earthCenter = earth.position.clone();
 
-// Orbit plane tilted so it reads as an inclined ellipse, not a flat ring.
-const cosT = Math.cos(0.38), sinT = Math.sin(0.38);
+// Orbit centre sits just above the limb, toward screen-centre. Tuned via the
+// world→screen calibration so the visible arc crosses the viewport.
+const orbitCenter = new THREE.Vector3(-0.4, -1.4, -1);
+const ORBIT_RX = 6.6;     // long axis (along the limb diagonal)
+const ORBIT_RY = 2.2;     // short axis (how far it bows off the limb)
+const ORBIT_RZ = 7.0;     // depth swing → far half passes behind the globe
+const ORBIT_ROLL = -0.22; // rotate the ellipse to match the limb's diagonal
+
+const cosR = Math.cos(ORBIT_ROLL), sinR = Math.sin(ORBIT_ROLL);
 
 function orbitPoint(angle, out) {
-  // Base ellipse in X (screen) and Z (depth), lifted in Y by the tilt.
-  const x = Math.cos(angle) * ORBIT_RX;
-  const z = Math.sin(angle) * ORBIT_RZ;
-  const y = Math.sin(angle) * ORBIT_RY * sinT;
-  out.set(
-    orbitCenter.x + x,
-    orbitCenter.y + y,
-    orbitCenter.z + z * cosT
-  );
+  // Ellipse in the orbit's own plane.
+  let lx = Math.cos(angle) * ORBIT_RX;
+  let ly = Math.sin(angle) * ORBIT_RY;
+  const lz = Math.sin(angle) * ORBIT_RZ;
+  // Roll the ellipse in screen-space (x,y) to align with the diagonal limb.
+  const rx = lx * cosR - ly * sinR;
+  const ry = lx * sinR + ly * cosR;
+  out.set(orbitCenter.x + rx, orbitCenter.y + ry, orbitCenter.z + lz);
   return out;
 }
 
 // Glowing satellite sprite (soft radial dot drawn to a canvas texture).
+// Tightened so it reads as a small steady point, not a comet.
 function makeGlowTexture() {
   const s = 64;
   const c = document.createElement('canvas');
@@ -211,9 +215,9 @@ function makeGlowTexture() {
   const ctx = c.getContext('2d');
   const g = ctx.createRadialGradient(s/2, s/2, 0, s/2, s/2, s/2);
   g.addColorStop(0,   'rgba(255,255,255,1)');
-  g.addColorStop(0.25,'rgba(210,230,255,0.9)');
-  g.addColorStop(0.6, 'rgba(140,185,255,0.35)');
-  g.addColorStop(1,   'rgba(140,185,255,0)');
+  g.addColorStop(0.18,'rgba(225,238,255,0.85)');
+  g.addColorStop(0.45,'rgba(150,190,255,0.25)');
+  g.addColorStop(1,   'rgba(150,190,255,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, s, s);
   const tex = new THREE.CanvasTexture(c);
@@ -230,41 +234,40 @@ const satMaterial = new THREE.SpriteMaterial({
   depthTest: true
 });
 const satellite = new THREE.Sprite(satMaterial);
-satellite.scale.set(0.62, 0.62, 0.62);
+satellite.scale.set(0.34, 0.34, 0.34);     // small point of light
 scene.add(satellite);
 
-// Trail: a fixed-length strip of points behind the satellite, fading out.
-const TRAIL_LEN = 60;
+// Trail: short and faint — just enough to suggest motion, not a comet tail.
+const TRAIL_LEN = 26;
 const trailGeometry = new THREE.BufferGeometry();
 const trailPositions = new Float32Array(TRAIL_LEN * 3);
 const trailColors = new Float32Array(TRAIL_LEN * 3);
 trailGeometry.setAttribute('position', new THREE.BufferAttribute(trailPositions, 3));
 trailGeometry.setAttribute('color', new THREE.BufferAttribute(trailColors, 3));
 const trailMaterial = new THREE.PointsMaterial({
-  size: 0.16,
+  size: 0.09,
   sizeAttenuation: true,
   vertexColors: true,
   transparent: true,
-  opacity: 0.9,
+  opacity: 0.6,
   blending: THREE.AdditiveBlending,
   depthWrite: false
 });
 const trail = new THREE.Points(trailGeometry, trailMaterial);
 scene.add(trail);
 
-// Pre-fill the trail along the orbit behind the start angle so it looks
-// established on first paint.
+// Pre-fill the trail along the orbit behind the start angle.
 let satAngle = 0;
-const ORBIT_SPEED = 0.0042;               // radians/frame (~25s per orbit @60fps)
-const TRAIL_STEP = 0.012;                 // angular spacing between trail points
+const ORBIT_SPEED = 0.0034;               // radians/frame (~30s per orbit @60fps)
+const TRAIL_STEP = 0.010;                 // angular spacing between trail points
 const _p = new THREE.Vector3();
 function initTrail() {
   for (let i = 0; i < TRAIL_LEN; i++) {
     orbitPoint(satAngle - i * TRAIL_STEP, _p);
     trailPositions[i*3] = _p.x; trailPositions[i*3+1] = _p.y; trailPositions[i*3+2] = _p.z;
     const t = 1 - i / TRAIL_LEN;           // brightness fades toward tail
-    const b = t * t;
-    trailColors[i*3] = b * 0.78; trailColors[i*3+1] = b * 0.86; trailColors[i*3+2] = b;
+    const b = t * t * 0.7;
+    trailColors[i*3] = b * 0.8; trailColors[i*3+1] = b * 0.88; trailColors[i*3+2] = b;
   }
   trailGeometry.attributes.position.needsUpdate = true;
   trailGeometry.attributes.color.needsUpdate = true;
