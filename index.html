@@ -72,8 +72,8 @@ const canvas = document.getElementById('earth-canvas');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 0, 6);
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
+camera.position.set(0, 0, 9);
 camera.rotation.z = -0.14; // slight roll → limb runs diagonally (STS-26 feel)
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -83,48 +83,98 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 const textureLoader = new THREE.TextureLoader();
 const earthTexture = textureLoader.load('assets/earth.jpg');
 earthTexture.colorSpace = THREE.SRGBColorSpace;
+earthTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+const bumpTexture = textureLoader.load('assets/earth_bump.jpg');
+const specTexture = textureLoader.load('assets/earth_spec.jpg');
+specTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
-// STS-26 look = camera pressed close to a BIG sphere, so the limb reads as a
-// shallow, near-straight diagonal rather than a full dome. We use a large
-// radius and place the camera just outside the surface, looking along it.
+// STS-26 look = camera close to a BIG sphere so the limb reads as a shallow,
+// near-straight diagonal. The MOOD comes from terminator lighting: most of the
+// visible disk in shadow, a bright crescent only along the edge.
 const EARTH_R = 20;
-const earthGeometry = new THREE.SphereGeometry(EARTH_R, 160, 160);
-const earthMaterial = new THREE.MeshStandardMaterial({ map: earthTexture, roughness: 1, metalness: 0 });
+const earthGeometry = new THREE.SphereGeometry(EARTH_R, 200, 200);
+const earthMaterial = new THREE.MeshStandardMaterial({
+  map: earthTexture,
+  bumpMap: bumpTexture,
+  bumpScale: 0.6,
+  roughnessMap: specTexture,
+  roughness: 0.92,
+  metalness: 0,
+  color: 0x8896a0   // slight desaturate/darken of the bright Blue Marble
+});
 const earth = new THREE.Mesh(earthGeometry, earthMaterial);
-// Center far below-screen; only the upper sliver of the limb enters the frame
-// along the bottom. Camera (at origin, z=6) sits ~6 units above this surface.
-earth.position.set(2, -(EARTH_R + 0.7), 0);
+earth.position.set(2, -(EARTH_R + 1.6), 0);
 earth.rotation.z = 0.12;
 earth.rotation.y = 2.4;
 scene.add(earth);
 
-// Thin atmospheric rim, slightly larger back-side shell.
-const glowGeometry = new THREE.SphereGeometry(EARTH_R + 0.18, 160, 160);
-const glowMaterial = new THREE.MeshBasicMaterial({ color: 0x6ea0d8, transparent: true, opacity: 0.16, side: THREE.BackSide });
-const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-glow.position.copy(earth.position);
-scene.add(glow);
+// ── Atmosphere: a Fresnel rim glow on a slightly larger back-side sphere.
+// This thin bright band hugging the limb is the STS-26 signature, and being
+// shader-driven it stays razor-sharp at any zoom (unlike the texture).
+const atmGeometry = new THREE.SphereGeometry(EARTH_R + 0.22, 200, 200);
+const atmMaterial = new THREE.ShaderMaterial({
+  side: THREE.BackSide,
+  transparent: true,
+  blending: THREE.AdditiveBlending,
+  uniforms: { glowColor: { value: new THREE.Color(0xaec8ff) } },
+  vertexShader: `
+    varying vec3 vNormal;
+    varying vec3 vView;
+    void main() {
+      vNormal = normalize(normalMatrix * normal);
+      vec4 mv = modelViewMatrix * vec4(position, 1.0);
+      vView = normalize(-mv.xyz);
+      gl_Position = projectionMatrix * mv;
+    }`,
+  fragmentShader: `
+    uniform vec3 glowColor;
+    varying vec3 vNormal;
+    varying vec3 vView;
+    void main() {
+      // Tight rim: high exponent → glow concentrated in a thin line at the limb.
+      float d = 1.0 - abs(dot(vNormal, vView));
+      float rim = pow(d, 8.0);
+      gl_FragColor = vec4(glowColor, rim * 0.85);
+    }`
+});
+const atmosphere = new THREE.Mesh(atmGeometry, atmMaterial);
+atmosphere.position.copy(earth.position);
+scene.add(atmosphere);
 
-// Sun to the left-and-front so the visible lower-left limb is daylit Earth
-// (oceans, cloud, continents), with the terminator falling away to the right.
-const sun = new THREE.DirectionalLight(0xffffff, 2.8);
-sun.position.set(-2, 0.5, 6);
+// ── Lighting: low grazing sun → terminator across the visible limb, with a
+// bright crescent hugging the edge (the STS-26 glowing band).
+const sun = new THREE.DirectionalLight(0xfff1e0, 3.6);
+sun.position.set(-5, -0.5, 5);   // grazing, slightly toward camera
 scene.add(sun);
-scene.add(new THREE.AmbientLight(0x2a3a4a, 0.85));
+scene.add(new THREE.AmbientLight(0x0e1a26, 0.45));  // deep shadow fill
 
+// ── Stars: sparse and subtle. Far fewer, smaller, dimmer, with per-star
+// brightness variation so they read as a faint scatter, not a uniform grid.
 const starGeometry = new THREE.BufferGeometry();
-const starCount = 1400;
+const starCount = 380;
 const starPositions = new Float32Array(starCount * 3);
+const starColors = new Float32Array(starCount * 3);
 for (let i = 0; i < starCount; i++) {
-  const r = 40 + Math.random() * 30;
+  const r = 60 + Math.random() * 40;
   const theta = Math.random() * Math.PI * 2;
   const phi = Math.acos(2 * Math.random() - 1);
   starPositions[i*3]   = r * Math.sin(phi) * Math.cos(theta);
   starPositions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
   starPositions[i*3+2] = r * Math.cos(phi);
+  // Most stars dim, a few slightly brighter — gentle falloff.
+  const b = 0.18 + Math.pow(Math.random(), 3) * 0.6;
+  starColors[i*3] = b; starColors[i*3+1] = b; starColors[i*3+2] = b;
 }
 starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.13, sizeAttenuation: true });
+starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
+const starMaterial = new THREE.PointsMaterial({
+  size: 0.18,
+  sizeAttenuation: true,
+  vertexColors: true,
+  transparent: true,
+  opacity: 0.85,
+  depthWrite: false
+});
 const stars = new THREE.Points(starGeometry, starMaterial);
 scene.add(stars);
 
