@@ -74,6 +74,7 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(0, 0, 6);
+camera.rotation.z = -0.14; // slight roll → limb runs diagonally (STS-26 feel)
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -83,23 +84,33 @@ const textureLoader = new THREE.TextureLoader();
 const earthTexture = textureLoader.load('assets/earth.jpg');
 earthTexture.colorSpace = THREE.SRGBColorSpace;
 
-const earthGeometry = new THREE.SphereGeometry(2.6, 64, 64);
+// STS-26 look = camera pressed close to a BIG sphere, so the limb reads as a
+// shallow, near-straight diagonal rather than a full dome. We use a large
+// radius and place the camera just outside the surface, looking along it.
+const EARTH_R = 20;
+const earthGeometry = new THREE.SphereGeometry(EARTH_R, 160, 160);
 const earthMaterial = new THREE.MeshStandardMaterial({ map: earthTexture, roughness: 1, metalness: 0 });
 const earth = new THREE.Mesh(earthGeometry, earthMaterial);
-earth.position.set(0, -3.1, 0);
-earth.rotation.z = 0.15;
+// Center far below-screen; only the upper sliver of the limb enters the frame
+// along the bottom. Camera (at origin, z=6) sits ~6 units above this surface.
+earth.position.set(2, -(EARTH_R + 0.7), 0);
+earth.rotation.z = 0.12;
+earth.rotation.y = 2.4;
 scene.add(earth);
 
-const glowGeometry = new THREE.SphereGeometry(2.68, 64, 64);
-const glowMaterial = new THREE.MeshBasicMaterial({ color: 0x5b8fc9, transparent: true, opacity: 0.12, side: THREE.BackSide });
+// Thin atmospheric rim, slightly larger back-side shell.
+const glowGeometry = new THREE.SphereGeometry(EARTH_R + 0.18, 160, 160);
+const glowMaterial = new THREE.MeshBasicMaterial({ color: 0x6ea0d8, transparent: true, opacity: 0.16, side: THREE.BackSide });
 const glow = new THREE.Mesh(glowGeometry, glowMaterial);
 glow.position.copy(earth.position);
 scene.add(glow);
 
-const sun = new THREE.DirectionalLight(0xffffff, 2.2);
-sun.position.set(-4, 1.5, 3);
+// Sun to the left-and-front so the visible lower-left limb is daylit Earth
+// (oceans, cloud, continents), with the terminator falling away to the right.
+const sun = new THREE.DirectionalLight(0xffffff, 2.8);
+sun.position.set(-2, 0.5, 6);
 scene.add(sun);
-scene.add(new THREE.AmbientLight(0x223344, 0.6));
+scene.add(new THREE.AmbientLight(0x2a3a4a, 0.85));
 
 const starGeometry = new THREE.BufferGeometry();
 const starCount = 1400;
