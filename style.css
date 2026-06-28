@@ -189,6 +189,22 @@ body.page::before {
   font-size: clamp(22px, 3.4vw, 30px);
   font-weight: 500;
   text-shadow: 0 0 16px rgba(0,0,0,0.9);
+  transition: letter-spacing 0.8s cubic-bezier(.22,.61,.36,1),
+              text-shadow 0.6s ease;
+}
+
+@media (hover: hover) {
+  .page-header .home-link:hover {
+    letter-spacing: 0.12em;
+    text-shadow: 0 0 16px rgba(0,0,0,0.9),
+                 0 0 18px rgba(150,190,255,0.85),
+                 0 0 4px rgba(255,255,255,0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-header .home-link { transition: none; }
+  .page-header .home-link:hover { letter-spacing: normal; }
 }
 
 .page-header .home-link .ko {
@@ -268,6 +284,76 @@ body.page::before {
   border-bottom: 1px solid rgba(255,255,255,0.4);
 }
 .page a.inline-link:hover { border-bottom-color: #fff; }
+
+/* ── Writing: platform links (Medium, Brunch) ── */
+.platform-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.platform-link {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 1.1rem 1.4rem;
+  border: 0.5px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  background: rgba(8,10,16,0.62);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  color: #fff;
+  transition: border-color 0.5s ease, background 0.5s ease,
+              letter-spacing 0.8s cubic-bezier(.22,.61,.36,1),
+              box-shadow 0.6s ease;
+}
+
+.platform-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+/* Brunch's official quill mark (white, transparent). */
+.platform-logo-brunch img {
+  display: block;
+  height: 26px;
+  width: auto;
+  opacity: 0.92;
+}
+
+.platform-name {
+  font-size: 19px;
+  font-weight: 500;
+}
+
+.platform-handle {
+  margin-left: auto;
+  font-size: 13px;
+  font-style: italic;
+  color: rgba(255,255,255,0.5);
+  text-shadow: 0 0 8px rgba(0,0,0,0.9);
+  transition: color 0.5s ease;
+}
+
+@media (hover: hover) {
+  .platform-link:hover {
+    border-color: rgba(150,190,255,0.5);
+    background: rgba(150,190,255,0.04);
+    box-shadow: 0 0 24px rgba(150,190,255,0.12);
+  }
+  .platform-link:hover .platform-name {
+    text-shadow: 0 0 16px rgba(150,190,255,0.7);
+  }
+  .platform-link:hover .platform-handle {
+    color: rgba(174,200,255,0.7);
+  }
+}
 
 /* Mobile: shrink the hub gracefully but keep the geometry */
 @media (max-width: 520px) {
