@@ -358,11 +358,14 @@ body.page::before {
 /* ── About: education, interests, profile links ── */
 .about-body {
   max-width: 620px;
-  margin: 0 auto 2.5rem;
+  margin: 0 auto 3rem;
 }
 
 .about-section {
-  margin-bottom: 2.4rem;
+  margin-bottom: 3.5rem;
+}
+.about-section:last-child {
+  margin-bottom: 0;
 }
 .about-section h2 {
   font-size: 15px;
@@ -370,8 +373,8 @@ body.page::before {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
-  padding-bottom: 0.7rem;
-  margin-bottom: 1.1rem;
+  padding-bottom: 0.8rem;
+  margin: 0 0 1.4rem 0;
   border-bottom: 1px solid rgba(255,255,255,0.18);
 }
 
