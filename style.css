@@ -377,30 +377,40 @@ body.page::before {
 
 .about-entry {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.about-entry-line {
+  display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: 1rem;
 }
-.about-entry-main {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.about-entry-title {
+.about-entry-school {
   font-size: 18px;
+  font-weight: 500;
   color: #fff;
   text-shadow: 0 0 10px rgba(0,0,0,0.8);
 }
-.about-entry-sub {
-  font-size: 15px;
-  font-style: italic;
-  color: rgba(255,255,255,0.6);
-}
-.about-entry-meta {
-  font-size: 14px;
-  color: var(--muted);
+.about-entry-place {
+  font-size: 16px;
+  color: #fff;
   white-space: nowrap;
   text-shadow: 0 0 8px rgba(0,0,0,0.9);
+}
+.about-entry-degree {
+  font-size: 16px;
+  color: rgba(255,255,255,0.65);
+}
+.about-entry-date {
+  font-size: 15px;
+  color: rgba(255,255,255,0.65);
+  white-space: nowrap;
+  text-shadow: 0 0 8px rgba(0,0,0,0.9);
+}
+.about-entry-date strong {
+  color: #fff;
+  font-weight: 500;
 }
 
 .about-tags {
@@ -429,6 +439,7 @@ body.page::before {
 
 .about-links {
   margin-top: 0;
+  max-width: none;
 }
 
 /* Mobile: shrink the hub gracefully but keep the geometry */
