@@ -355,6 +355,82 @@ body.page::before {
   }
 }
 
+/* ── About: education, interests, profile links ── */
+.about-body {
+  max-width: 620px;
+  margin: 0 auto 2.5rem;
+}
+
+.about-section {
+  margin-bottom: 2.4rem;
+}
+.about-section h2 {
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-bottom: 0.7rem;
+  margin-bottom: 1.1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+}
+
+.about-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+.about-entry-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.about-entry-title {
+  font-size: 18px;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(0,0,0,0.8);
+}
+.about-entry-sub {
+  font-size: 15px;
+  font-style: italic;
+  color: rgba(255,255,255,0.6);
+}
+.about-entry-meta {
+  font-size: 14px;
+  color: var(--muted);
+  white-space: nowrap;
+  text-shadow: 0 0 8px rgba(0,0,0,0.9);
+}
+
+.about-tags {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+}
+.about-tags li {
+  font-size: 14px;
+  color: #e6e8ec;
+  padding: 6px 14px;
+  border: 0.5px solid rgba(255,255,255,0.2);
+  border-radius: 100px;
+  background: rgba(8,10,16,0.5);
+  transition: border-color 0.5s ease, color 0.5s ease;
+}
+@media (hover: hover) {
+  .about-tags li:hover {
+    border-color: rgba(150,190,255,0.5);
+    color: rgba(200,220,255,0.95);
+  }
+}
+
+.about-links {
+  margin-top: 0;
+}
+
 /* Mobile: shrink the hub gracefully but keep the geometry */
 @media (max-width: 520px) {
   .node-label { font-size: 15px; }
