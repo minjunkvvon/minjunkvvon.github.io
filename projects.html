@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Serif+KR:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=2">
 </head>
 <body class="page">
 <header class="page-header">
@@ -17,6 +17,32 @@
   <div class="page-title">Projects</div>
 </header>
 
-<p class="muted">(in progress)</p>
+<div class="about-body">
+  <article class="project">
+    <div class="project-head">
+      <div class="project-titles">
+        <h2 class="project-title-en">V Corps Science &amp; Technology Competition</h2>
+        <span class="project-title-ko">육군 5군단 승진 과학기술 강군 공모전</span>
+      </div>
+      <span class="project-meta">Military service · Commended</span>
+    </div>
+
+    <p class="project-desc">Co-designed a <strong>Quantum-Secured Frequency-Hopping System (QSFHS)</strong>, a concept for hardening tactical radio communications against interception and jamming. The starting point was a weakness in how secure links are built today: classical encryption (RSA, ECC, AES) rests on mathematical problems that a sufficiently powerful quantum computer could unwind, and the pseudo-random generators (PRNGs) that drive frequency-hopping patterns are deterministic — given enough observation, a hop sequence can be predicted, and a predictable sequence can be jammed or listened in on.</p>
+
+    <p class="project-desc">The proposal replaces that deterministic core with physics. A <strong>quantum random number generator (QRNG)</strong> produces the hopping pattern from genuinely unpredictable quantum events — I looked at three physical sources: single-photon path choice at a beam splitter, photon arrival-time jitter, and vacuum-fluctuation noise, the last being the most compact to fabricate as a chip. The key exchange is then protected by <strong>quantum key distribution (QKD)</strong> using the BB84 protocol, where any eavesdropper unavoidably disturbs the photons' polarization states and is therefore detected the moment they try.</p>
+
+    <p class="project-desc">A design decision I argued for was <em>not</em> embedding a QRNG chip in every radio. Instead, a central QRNG generates the randomness and distributes synchronized hopping patterns and keys to endpoints over QKD. This keeps per-device cost and power draw low (military hardware has to be low-power and rugged), simplifies key management across a networked force, and improves security — a captured endpoint carries no generator of its own to compromise. I also surveyed transport options for the quantum channel (fiber, free-space optical, satellite-based, and emerging RF-band QKD) and their trade-offs in range, weather sensitivity, and cost.</p>
+
+    <p class="project-desc">Recognized with a commendation for contributing an idea applying quantum technology to secure military communications.</p>
+
+    <ul class="project-tags">
+      <li>RF Communications</li>
+      <li>Frequency Hopping</li>
+      <li>Quantum Cryptography</li>
+      <li>QRNG</li>
+      <li>QKD · BB84</li>
+    </ul>
+  </article>
+</div>
 </body>
 </html>
